@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Prompt and Articles Demo</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .prompt-list, .url-list { margin-top: 20px; }
+    .prompt-item, .url-item { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; position: relative; }
+    .prompt-item .delete-btn, .url-item .thumb-up { position: absolute; right: 10px; top: 10px; cursor: pointer; }
+    .preview-btn { background-color: #e91e63; color: white; border: none; padding: 10px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<h2>Search articles</h2>
+
+<div class="prompt-list" id="promptList"></div>
+
+<form id="promptForm">
+  <input type="text" name="prompt" id="prompt" style="width:80%;padding:10px;" required>
+  <button type="submit">+</button>
+</form>
+
+<button class="preview-btn" id="previewBtn">Preview</button>
+
+<div class="url-list" id="urlList"></div>
+
+<script>
+const prompts = JSON.parse(localStorage.getItem('prompts')) || [];
+
+function savePrompts() {
+  localStorage.setItem('prompts', JSON.stringify(prompts));
+}
+
+function renderPrompts() {
+  const promptList = document.getElementById('promptList');
+  promptList.innerHTML = '';
+  prompts.forEach((p, idx) => {
+    const div = document.createElement('div');
+    div.className = 'prompt-item';
+    div.innerHTML = `${p} <span class="delete-btn">🗑️</span>`;
+    div.querySelector('.delete-btn').onclick = () => {
+      prompts.splice(idx, 1);
+      savePrompts();
+      renderPrompts();
+    };
+    promptList.appendChild(div);
+  });
+}
+
+
+
+function renderArticles(articles) {
+  const urlList = document.getElementById('urlList');
+  urlList.innerHTML = '';
+  articles.forEach(article => {
+    const relevance = ((1 - article.distance) * 100).toFixed(0);
+    const div = document.createElement('div');
+    div.className = 'url-item';
+    div.innerHTML = `
+      <strong>URL:</strong> <a href="${article.url}" target="_blank">${article.url}</a><br>
+      <strong>Relevance:</strong> ${relevance}%
+      <span class="thumb-up">👍</span>`;
+
+    div.querySelector('.thumb-up').onclick = () => {
+      prompts.push(article.summary);
+      savePrompts();
+      renderPrompts();
+    };
+
+    urlList.appendChild(div);
+  });
+}
+
+document.getElementById('promptForm').onsubmit = (e) => {
+  e.preventDefault();
+  const prompt = document.getElementById('prompt').value;
+  prompts.push(prompt);
+  savePrompts();
+  renderPrompts();
+  document.getElementById('prompt').value = '';
+};
+
+document.getElementById('previewBtn').onclick = async () => {
+  const storedPrompts = JSON.parse(localStorage.getItem('prompts')) || [];
+
+  if (storedPrompts.length === 0) {
+    alert('No prompts available!');
+    return;
+  }
+
+  const gluePrompt = '\n---\n';
+  const megaPrompt = storedPrompts.join(gluePrompt);
+
+  try {
+    const res = await fetch('https://nodered.givslyga.com/articles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: megaPrompt })
+    });
+
+    const data = await res.json();
+
+
+    if (Array.isArray(data) && data.length > 0) {
+        renderArticles(data);
+    } else {
+        const urlList = document.getElementById('urlList');
+        urlList.innerHTML = 'No articles found';
+    }
+    } catch (error) {
+    alert('Error fetching articles: ' + error);
+  }
+};
+
+renderPrompts();
+</script>
+
+</body>
+</html>
