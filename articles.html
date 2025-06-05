@@ -90,7 +90,7 @@ document.getElementById('previewBtn').onclick = async () => {
     return;
   }
 
-  const gluePrompt = '\n---\n';
+  const gluePrompt = '\n ALSO CONSIDER \n';
   const megaPrompt = storedPrompts.join(gluePrompt);
 
   try {
