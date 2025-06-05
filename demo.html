@@ -17,7 +17,7 @@
       return url.searchParams.get(name) || '';
     }
 
-    // The hardcoded Celtra ad markup as a template string (with all ${…} placeholders)
+    // The hardcoded Celtra ad markup as a template string (with all \${…} placeholders)
     const celtraTemplate = `<div class="celtra-ad-v3">
     <!-- user.userZip               = raw       \${POSTAL_CODE} -->
     <!-- eas.JHtDUkVBVElWRV9JRH0%3D = raw       \${CREATIVE_ID} -->
@@ -43,7 +43,7 @@
             for (var k in params) {
                 qs += '&amp;' + encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
             }
-            var src = 'https://ads.celtra.com/9539d15f/web.js?' + qs;
+            var src = 'https://ads.celtra.com/e81c2c69/web.js?' + qs;
             req.src = src;
             img.parentNode.insertBefore(req, img.nextSibling);
         })(this);
@@ -67,7 +67,7 @@
       DEVICE_AAID: getQueryParam("aaid") || ""       
     };
 
-    // 2) One-pass replacement of every ${KEY} → macros[KEY]
+    // 2) One-pass replacement of every \${KEY} → macros[KEY]
     const adHtml = celtraTemplate.replace(/\$\{(.*?)\}/g, function(fullMatch, keyName) {
       return macros[keyName] !== undefined ? macros[keyName] : "";
     });
