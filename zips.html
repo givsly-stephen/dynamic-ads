@@ -49,7 +49,7 @@ function renderPrompts() {
   });
 }
 
-function renderArticles(zips) {
+function renderZips(zips) {
   const urlList = document.getElementById('urlList');
   urlList.innerHTML = '';
   zips.forEach(zip => {
@@ -96,7 +96,7 @@ document.getElementById('previewBtn').onclick = async () => {
 
 
     if (Array.isArray(data) && data.length > 0) {
-        renderArticles(data);
+        renderZips(data);
     } else {
         const urlList = document.getElementById('urlList');
         urlList.innerHTML = 'No zips found';
