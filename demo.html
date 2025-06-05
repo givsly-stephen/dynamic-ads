@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dynamic Ad</title>
+</head>
+<body style="padding:0; margin: 0; background-color: black;">
+    <div id="adPreviewContent" style="width: 100%; height: 100%; margin: 0 auto;">
+      <!-- Celtra ad will be inserted here -->
+    </div>
+  
+
+  <script>
+    // Utility to get query param by name
+    function getQueryParam(name) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name) || '';
+    }
+
+    // The hardcoded Celtra ad markup as a template string (with all ${…} placeholders)
+    const celtraTemplate = `<div class="celtra-ad-v3">
+    <!-- user.userZip               = raw       \${POSTAL_CODE} -->
+    <!-- eas.JHtDUkVBVElWRV9JRH0%3D = raw       \${CREATIVE_ID} -->
+    <!-- eas.JHtQT1NUQUxfQ09ERX0%3D = raw       \${POSTAL_CODE} -->
+    <!-- externalCreativeId         = raw       \${CREATIVE_ID} -->
+    <!-- externalPlacementId        = raw       \${CPG_ID} -->
+    <!-- externalSiteId             = raw       \${SITE_ID} -->
+    <!-- externalSiteName           = urldecode \${REFERER_URL_ENC} -->
+    <!-- externalSupplierId         = raw       \${PUBLISHER_ID} -->
+    <!-- externalCampaignId         = raw       \${CP_ID} -->
+    <!-- externalSessionId          = raw       \${AUCTION_ID} -->
+    <!-- externalCreativeSize       = raw       \${WIDTH}x\${HEIGHT} -->
+    <img src="data:image/png,celtra" style="display: none" onerror="
+        (function(img) {
+            var params = {'accountId':'caa50926','clickUrl':'\${CLICK_URL}','widthBreakpoint':'','expandDirection':'undefined','preferredClickThroughWindow':'new','clickEvent':'advertiser','iosAdvId':'\${DEVICE_APPLE_IDA}','androidAdvId':'\${DEVICE_AAID}','externalAdServer':'AppNexus','tagVersion':'html-standard-7'};
+            [].slice.apply(img.parentNode.childNodes).forEach(function(n) { var decfs = { urldecode: decodeURIComponent, htmldecode: function(v) { var d = document.createElement('div'); d.innerHTML = v; return d.textContent; }, eval: function(v) { return eval(v); }, raw: function(v) { return v; } }; var m; if (n.nodeType == 8 &amp;&amp; (m = n.textContent.match(/^&#92;s+([&#92;w%.]+)(&#92;[.+&#92;])?&#92;s+=&#92;s+(&#92;w+)&#92;s+(.*)$/i))) { try { params[m[1]+(m[2] || '')] = decfs[m[3]](m[4].replace(/^&#92;s+|&#92;s+$/g, '')); } catch (e) {} } });
+            var req = document.createElement('script');
+            req.id = params.scriptId = 'celtra-script-' + (window.celtraScriptIndex = (window.celtraScriptIndex||0)+1);
+            params.clientTimestamp = new Date/1000;
+            params.clientTimeZoneOffsetInMinutes = new Date().getTimezoneOffset();
+            params.hostPageLoadId=window.celtraHostPageLoadId=window.celtraHostPageLoadId||(Math.random()+'').slice(2);
+            var qs = '';
+            for (var k in params) {
+                qs += '&amp;' + encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+            }
+            var src = 'https://ads.celtra.com/9539d15f/web.js?' + qs;
+            req.src = src;
+            img.parentNode.insertBefore(req, img.nextSibling);
+        })(this);
+    "/>
+</div>`;
+
+    // 1) Gather all macros into one object
+    const macros = {
+      POSTAL_CODE: getQueryParam("zip") || "94303",
+      CREATIVE_ID: "123456",                
+      CPG_ID: "987654",                     
+      SITE_ID: "5555",                      
+      REFERER_URL_ENC: encodeURIComponent(document.referrer || ""),
+      PUBLISHER_ID: "112233",               
+      CP_ID: "445566",                      
+      AUCTION_ID: "AUCT7890",               
+      WIDTH: "300",                         
+      HEIGHT: "600",                        
+      CLICK_URL: "https://givsly.com/demos",   
+      DEVICE_APPLE_IDA: getQueryParam("ida") || "",  
+      DEVICE_AAID: getQueryParam("aaid") || ""       
+    };
+
+    // 2) One-pass replacement of every ${KEY} → macros[KEY]
+    const adHtml = celtraTemplate.replace(/\$\{(.*?)\}/g, function(fullMatch, keyName) {
+      return macros[keyName] !== undefined ? macros[keyName] : "";
+    });
+
+    // 3) Inject into the preview container
+    document.getElementById('adPreviewContent').innerHTML = adHtml;
+  </script>
+</body>
+</html>
